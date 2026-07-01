@@ -14,6 +14,7 @@ class ImportPartySnapshot extends Command
 
     public function handle(): int
     {
+        ini_set('memory_limit', '-1');
         $filePath = $this->argument('file');
 
         if (!File::exists($filePath)) {
