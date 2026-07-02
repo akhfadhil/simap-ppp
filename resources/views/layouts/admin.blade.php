@@ -127,7 +127,7 @@
                 <img src="{{ asset($party['assets']['logo']) }}" alt="{{ $party['app_name'] }} Logo" class="w-full h-full object-contain">
             </div>
             <div>
-                <h1 class="admin-display admin-primary text-[13px] font-bold uppercase tracking-wider leading-tight">{{ $party['full_name'] ?? $party['app_name'] }}</h1>
+                <h1 class="admin-display admin-primary text-[15px] font-bold uppercase tracking-wider leading-tight">{{ $party['full_name'] ?? $party['app_name'] }}</h1>
                 <span class="admin-mono admin-muted-soft text-[10px] uppercase tracking-widest">{{ $roleLabel }}</span>
             </div>
         </div>
@@ -153,7 +153,7 @@
                 <div class="admin-primary-bg w-8 h-8 rounded-lg overflow-hidden flex items-center justify-center flex-shrink-0">
                     <img src="{{ asset($party['assets']['logo']) }}" alt="{{ $party['app_name'] }} Logo" class="w-full h-full object-contain">
                 </div>
-                <h1 class="admin-display admin-primary text-[13px] font-bold uppercase tracking-wider leading-tight">{{ $party['full_name'] ?? $party['app_name'] }}</h1>
+                <h1 class="admin-display admin-primary text-[15px] font-bold uppercase tracking-wider leading-tight">{{ $party['full_name'] ?? $party['app_name'] }}</h1>
             </div>
             <div class="admin-primary-bg px-2 py-1 w-max rounded-sm">
                 <span class="admin-display admin-primary uppercase text-[10px] tracking-[.2em]">{{ $roleLabel }}</span>

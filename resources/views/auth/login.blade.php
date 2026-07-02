@@ -2,18 +2,18 @@
 
 @section('content')
 @php($party = $party ?? config('party'))
-<div class="relative z-10 w-full max-w-md px-5">
-    <div class="text-center mb-10">
-        <div class="mx-auto mb-5 flex h-24 w-24 items-center justify-center rounded-2xl border brand-border-soft bg-white p-3 brand-shadow dark:bg-gray-900">
+<div class="relative z-10 w-full max-w-lg px-5 my-8">
+    <div class="text-center mb-8">
+        <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl border brand-border-soft bg-white p-2 brand-shadow dark:bg-gray-900">
             <img src="{{ asset($party['assets']['logo']) }}" alt="{{ $party['app_name'] }} Logo" class="h-full w-full object-contain">
         </div>
-        <span class="inline-block brand-bg text-white text-[10px] tracking-[3px] px-3 py-1 mb-4 rounded font-semibold">{{ $party['name'] }} - {{ $party['active_year'] }}</span>
-        <h1 class="font-display text-3xl sm:text-4xl tracking-[3px] leading-tight dark:text-white text-gray-900">{{ $party['app_name'] }}</h1>
+        <span class="inline-block brand-bg text-white text-[10px] tracking-[3px] px-3 py-1 mb-3 rounded font-semibold">{{ $party['name'] }} - {{ $party['active_year'] }}</span>
+        <h1 class="font-display text-2xl sm:text-3xl tracking-[2px] leading-normal dark:text-white text-gray-900 font-bold">{{ $party['app_name'] }}</h1>
         <p class="text-[11px] dark:text-gray-500 text-gray-400 tracking-[2px] uppercase mt-2">{{ $party['tagline'] }}</p>
     </div>
 
-    <div class="dark:bg-gray-800 bg-white rounded-2xl border dark:border-gray-700 border-gray-200 p-9 shadow-xl">
-        <p class="text-[10px] tracking-[3px] dark:text-gray-500 text-gray-400 uppercase mb-7 font-semibold">// Login</p>
+    <div class="dark:bg-gray-800 bg-white rounded-2xl border dark:border-gray-700 border-gray-200 p-6 sm:p-8 shadow-xl">
+        <p class="text-[10px] tracking-[3px] dark:text-gray-500 text-gray-400 uppercase mb-5 font-semibold">// Login</p>
 
         <form method="POST" action="{{ route('login.post') }}">
             @csrf
