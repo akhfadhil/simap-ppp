@@ -9,6 +9,7 @@ use App\Models\Tps;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Http;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\PendukungExport;
 
@@ -327,7 +328,73 @@ class PemetaanDukunganController extends Controller
 
         return Excel::download(
             new PendukungExport($kecamatanId, $desaId, $tpsId, $search),
-            'data_pendukung_garuda_' . date('Ymd_His') . '.xlsx'
+            'data_pendukung_' . config('party.slug', 'partai') . '_' . date('Ymd_His') . '.xlsx'
         );
+    }
+
+    public function publicCreate()
+    {
+        $kecamatans = Kecamatan::orderBy('nama')->get();
+        $desas = Desa::orderBy('nama')->get();
+        $tpsList = Tps::orderBy('nama')->get();
+
+        return view('pemetaan-dukungan.public-create', compact('kecamatans', 'desas', 'tpsList'));
+    }
+
+    public function publicStore(Request $request)
+    {
+        $request->validate([
+            'nama' => 'required|string|max:255',
+            'nik' => 'required|string|size:16|unique:pendukungs,nik',
+            'no_hp' => 'required|string|max:20',
+            'alamat' => 'required|string',
+            'kecamatan_id' => 'required|exists:kecamatans,id',
+            'desa_id' => 'required|exists:desas,id',
+            'tps_id' => 'nullable|exists:tps,id',
+            'ktp' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:5120',
+            'catatan' => 'nullable|string',
+        ]);
+
+        $nik = $request->input('nik');
+        $partaiSlug = config('party.slug', 'partai');
+        $apiUrl = rtrim(config('party.main_simap_url', 'http://10.20.50.75'), '/') . '/api/check-nik';
+
+        try {
+            $response = Http::timeout(5)->post($apiUrl, [
+                'nik' => $nik,
+                'partai_slug' => $partaiSlug,
+            ]);
+
+            if ($response->failed()) {
+                $errData = $response->json();
+                $msg = $errData['message'] ?? 'Gagal memverifikasi NIK dengan server pusat.';
+                return back()->withInput()->withErrors(['nik' => $msg]);
+            }
+        } catch (\Exception $e) {
+            return back()->withInput()->withErrors(['nik' => 'Koneksi ke server pusat gagal. Silakan coba beberapa saat lagi.']);
+        }
+
+        // Guard wilayah
+        $desa = Desa::findOrFail($request->input('desa_id'));
+        abort_if($desa->kecamatan_id !== (int)$request->input('kecamatan_id'), 403, 'Desa tidak valid untuk kecamatan yang dipilih.');
+
+        if ($request->filled('tps_id')) {
+            $tps = Tps::findOrFail($request->input('tps_id'));
+            abort_if($tps->desa_id !== (int)$request->input('desa_id'), 403, 'TPS tidak valid untuk desa yang dipilih.');
+        }
+
+        $data = $request->except(['ktp']);
+        $data['created_by'] = null; // Public self-registration
+
+        if ($request->hasFile('ktp')) {
+            $path = $request->file('ktp')->store('private/ktp');
+            $data['ktp_path'] = $path;
+        }
+
+        Pendukung::create($data);
+
+        return redirect()->route('pemetaan-dukungan.public-create')
+            ->with('success_registered', true)
+            ->with('registered_name', $request->input('nama'));
     }
 }

@@ -11,6 +11,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 class PemetaanDukunganTest extends TestCase
@@ -294,5 +295,64 @@ class PemetaanDukunganTest extends TestCase
         $this->actingAs($this->kordesA)
             ->get(route('pemetaan-dukungan.export'))
             ->assertForbidden();
+    }
+
+    public function test_public_can_access_registration_page(): void
+    {
+        $response = $this->get(route('pemetaan-dukungan.public-create'));
+
+        $response->assertOk();
+        $response->assertViewIs('pemetaan-dukungan.public-create');
+        $response->assertSee('Registrasi Dukungan Mandiri');
+    }
+
+    public function test_public_can_register_new_supporter_with_valid_nik(): void
+    {
+        Http::fake([
+            '*/api/check-nik' => Http::response(['success' => true, 'message' => 'NIK berhasil diregistrasikan.'], 200),
+        ]);
+
+        $response = $this->post(route('pemetaan-dukungan.public-store'), [
+            'nama' => 'Pendukung Mandiri',
+            'nik' => '9999999999999999',
+            'no_hp' => '08999999',
+            'alamat' => 'Alamat Mandiri',
+            'kecamatan_id' => $this->kecamatanA->id,
+            'desa_id' => $this->desaA->id,
+        ]);
+
+        $response->assertRedirect(route('pemetaan-dukungan.public-create'));
+        $response->assertSessionHas('success_registered', true);
+
+        $this->assertDatabaseHas('pendukungs', [
+            'nama' => 'Pendukung Mandiri',
+            'nik' => '9999999999999999',
+            'created_by' => null,
+        ]);
+    }
+
+    public function test_public_registration_fails_when_nik_already_registered_in_other_party(): void
+    {
+        Http::fake([
+            '*/api/check-nik' => Http::response(['success' => false, 'message' => 'NIK ini sudah terdaftar memberikan dukungan untuk partai lain.'], 422),
+        ]);
+
+        $response = $this->from(route('pemetaan-dukungan.public-create'))
+            ->post(route('pemetaan-dukungan.public-store'), [
+                'nama' => 'Pendukung Mandiri',
+                'nik' => '9999999999999999',
+                'no_hp' => '08999999',
+                'alamat' => 'Alamat Mandiri',
+                'kecamatan_id' => $this->kecamatanA->id,
+                'desa_id' => $this->desaA->id,
+            ]);
+
+        $response->assertRedirect(route('pemetaan-dukungan.public-create'));
+        $response->assertSessionHasErrors('nik');
+
+        $this->assertDatabaseMissing('pendukungs', [
+            'nama' => 'Pendukung Mandiri',
+            'nik' => '9999999999999999',
+        ]);
     }
 }

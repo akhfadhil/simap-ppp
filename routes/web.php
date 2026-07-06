@@ -16,6 +16,10 @@ Route::get('/', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->name('login.post');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
+// Public Support Registration
+Route::get('/daftar-dukungan', [App\Http\Controllers\PemetaanDukunganController::class, 'publicCreate'])->name('pemetaan-dukungan.public-create');
+Route::post('/daftar-dukungan', [App\Http\Controllers\PemetaanDukunganController::class, 'publicStore'])->name('pemetaan-dukungan.public-store');
+
 Route::middleware('auth')->group(function () {
     // Account
     Route::get('/password', [AccountController::class, 'editPassword'])->name('password.edit');

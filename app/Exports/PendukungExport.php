@@ -83,7 +83,7 @@ class PendukungExport implements FromArray, WithColumnWidths, WithStyles, WithTi
         ];
 
         return array_merge([
-            ['DATA PENDUKUNG PARTAI GARUDA'],
+            ['DATA PENDUKUNG ' . strtoupper(config('party.name', 'PARTAI'))],
             ['Dicetak pada', now()->format('d/m/Y H:i')],
             [''],
             $headings,
